@@ -3,13 +3,20 @@ async function scanAndLoadFolder() {
   try {
     const dirHandle = await window.showDirectoryPicker();
     const imageFiles = [];
+    const imageFileNames = [];
     for await (const entry of dirHandle.values()) {
       if (entry.kind === 'file' && entry.name.match(/\.(jpg|jpeg|png)$/i)) {
+        imageFileNames.push(entry.name);
         imageFiles.push(URL.createObjectURL(await entry.getFile()));
       }
     }
-    if (imageFiles.length > 0) {
-      displayImages(imageFiles);
+    // Trie les noms de fichiers pour conserver le même ordre que les images
+    const sortedImageFiles = imageFileNames.map(name => {
+      const index = imageFileNames.indexOf(name);
+      return imageFiles[index];
+    });
+    if (sortedImageFiles.length > 0) {
+      displayImages(sortedImageFiles);
     } else {
       alert('Aucune image trouvée dans le dossier.');
     }
@@ -47,26 +54,18 @@ document.getElementById('fileInput').addEventListener('change', async function(e
 function displayImages(imageUrls) {
   const viewer = document.getElementById('viewer');
   viewer.innerHTML = '';
-  const osdDiv = document.createElement('div');
-  osdDiv.id = 'osd-viewer';
-  viewer.appendChild(osdDiv);
-  const thumbsDiv = document.createElement('div');
-  thumbsDiv.id = 'thumbs';
-  viewer.appendChild(thumbsDiv);
-  const osdViewer = OpenSeadragon({
-    id: 'osd-viewer',
-    tileSources: imageUrls[0],
-    prefixUrl: 'https://cdnjs.cloudflare.com/ajax/libs/openseadragon/2.4.2/images/',
-    showNavigator: true,
-    navigatorPosition: 'BOTTOM_RIGHT',
-    navigatorSizeRatio: 0.15,
-    gestureSettingsMouse: { scrollToZoom: true },
-    gestureSettingsTouch: { scrollToZoom: true }
-  });
-  imageUrls.forEach(url => {
-    const thumbImg = document.createElement('img');
-    thumbImg.src = url;
-    thumbImg.addEventListener('click', () => osdViewer.open(url));
-    thumbsDiv.appendChild(thumbImg);
-  });
+  const pageCount = Math.ceil(imageUrls.length / 2);
+  for (let i = 0; i < pageCount; i++) {
+    const pageDiv = document.createElement('div');
+    pageDiv.classList.add('page');
+    const pageImage1 = document.createElement('img');
+    pageImage1.src = imageUrls[i * 2];
+    pageDiv.appendChild(pageImage1);
+    if (i * 2 + 1 < imageUrls.length) {
+      const pageImage2 = document.createElement('img');
+      pageImage2.src = imageUrls[i * 2 + 1];
+      pageDiv.appendChild(pageImage2);
+    }
+    viewer.appendChild(pageDiv);
+  }
 }
