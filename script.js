@@ -1,83 +1,51 @@
-// Fonction pour détecter les gestes de glissement
-function detectSwipe(el, callback) {
-  let touchstartX = 0;
-  let touchstartY = 0;
-  let touchendX = 0;
-  let touchendY = 0;
+// Récupérer les éléments du DOM
+const fileInput = document.getElementById('fileInput');
+const imageContainer = document.getElementById('imageContainer');
+const prevButton = document.getElementById('prevButton');
+const nextButton = document.getElementById('nextButton');
 
-  el.addEventListener('touchstart', function(event) {
-    touchstartX = event.touches[0].screenX;
-    touchstartY = event.touches[0].screenY;
-  }, false);
+let currentImageIndex = 0;
+let images = [];
 
-  el.addEventListener('touchend', function(event) {
-    touchendX = event.changedTouches[0].screenX;
-    touchendY = event.changedTouches[0].screenY;
-    handleGesture();
-  }, false);
-
-  function handleGesture() {
-    if (touchendX < touchstartX) {
-      callback('swipeleft');
-    }
-    if (touchendX > touchstartX) {
-      callback('swiperight');
-    }
-    if (touchendY < touchstartY) {
-      callback('swipeup');
-    }
-    if (touchendY > touchstartY) {
-      callback('swipedown');
-    }
-  }
+// Fonction pour afficher l'image actuelle
+function displayImage() {
+    const imageUrl = images[currentImageIndex];
+    imageContainer.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = imageUrl;
+    imageContainer.appendChild(img);
 }
 
-// Fonction pour afficher une image en plein écran
-function displayFullScreen(imageUrl) {
-  const fullScreenDiv = document.createElement('div');
-  fullScreenDiv.classList.add('fullscreen');
-  const fullScreenImg = document.createElement('img');
-  fullScreenImg.src = imageUrl;
-  fullScreenDiv.appendChild(fullScreenImg);
-  document.body.appendChild(fullScreenDiv);
-
-  // Ajouter un événement pour fermer l'image en plein écran au clic
-  fullScreenDiv.addEventListener('click', () => {
-    document.body.removeChild(fullScreenDiv);
-  });
+// Fonction pour afficher l'image suivante
+function nextImage() {
+    currentImageIndex = (currentImageIndex + 1) % images.length;
+    displayImage();
 }
 
-// Fonction pour afficher les images
-function displayImages(imageUrls) {
-  const viewer = document.getElementById('viewer');
-  viewer.innerHTML = '';
-  const pageCount = Math.ceil(imageUrls.length / 2);
-  for (let i = 0; i < pageCount; i++) {
-    const pageDiv = document.createElement('div');
-    pageDiv.classList.add('page');
-    const pageImage1 = document.createElement('img');
-    pageImage1.src = imageUrls[i * 2];
-    pageImage1.addEventListener('click', () => displayFullScreen(imageUrls[i * 2]));
-    pageDiv.appendChild(pageImage1);
-    if (i * 2 + 1 < imageUrls.length) {
-      const pageImage2 = document.createElement('img');
-      pageImage2.src = imageUrls[i * 2 + 1];
-      pageImage2.addEventListener('click', () => displayFullScreen(imageUrls[i * 2 + 1]));
-      pageDiv.appendChild(pageImage2);
-    }
-    viewer.appendChild(pageDiv);
-  }
+// Fonction pour afficher l'image précédente
+function prevImage() {
+    currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+    displayImage();
+}
 
-  // Ajouter des événements de glissement pour la navigation entre les images
-  detectSwipe(viewer, function(direction) {
-    if (direction === 'swipeleft') {
-      // Navigation vers la gauche (image précédente)
-      console.log('Swipe left');
-    } else if (direction === 'swiperight') {
-      // Navigation vers la droite (image suivante)
-      console.log('Swipe right');
-    } else if (direction === 'swipeup') {
-      // Navigation vers le haut (diaporama vertical)
-      console.log('Swipe up');
-    } else if (direction === 'swipedown') {
-      // Navigation vers
+// Écouter les changements dans l'input de fichier
+fileInput.addEventListener('change', function(event) {
+    const files = event.target.files;
+    images = [];
+    currentImageIndex = 0;
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            images.push(e.target.result);
+            if (images.length === files.length) {
+                displayImage();
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Écouter les clics sur les boutons "Précédent" et "Suivant"
+prevButton.addEventListener('click', prevImage);
+nextButton.addEventListener('click', nextImage);
