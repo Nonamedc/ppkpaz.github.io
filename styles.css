@@ -18,9 +18,8 @@ body {
     justify-content: center;
 }
 
-#thumbs img {
-    width: 100px;
+.page {
+    width: 50%;
     height: auto;
-    margin: 5px;
-    cursor: pointer;
+    display: inline-block;
 }
