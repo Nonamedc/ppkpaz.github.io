@@ -16,25 +16,25 @@ body {
     justify-content: center;
 }
 
-.page {
+.cover {
     margin: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
     overflow: hidden;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease;
+    cursor: pointer;
 }
 
-.page:hover {
+.cover:hover {
     transform: scale(1.05);
 }
 
-img {
+.cover img {
     max-width: 100%;
     max-height: 200px;
     display: block;
     margin: auto;
-    cursor: pointer;
 }
 
 .fullscreen {
