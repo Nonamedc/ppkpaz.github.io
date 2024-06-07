@@ -1,35 +1,30 @@
 body {
-    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to bottom, #63e63e, #308030); /* Dégradé de vert */
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
-#file-input {
-    display: none; /* Cacher l'élément de saisie de fichier */
-}
-
-#add-book-btn {
-    margin: 20px;
+input[type="file"],
+button {
+    margin: 10px;
     padding: 10px 20px;
     font-size: 16px;
 }
 
-#book-cover {
-    margin: 20px auto;
-    max-width: 300px; /* Taille maximale pour l'image de la couverture */
-    height: auto;
-    text-align: center;
-}
-
-#book-cover img {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
 #book-viewer {
-    margin: 20px auto;
-    max-width: 800px; /* Taille maximale pour le visualiseur de livre */
-    height: auto;
+    width: 100%;
+    max-width: 800px;
+    height: 80%;
     overflow: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
