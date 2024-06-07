@@ -1,7 +1,3 @@
-document.getElementById('add-book-btn').addEventListener('click', function() {
-    document.getElementById('file-input').click();
-});
-
 document.getElementById('file-input').addEventListener('change', function(event) {
     const file = event.target.files[0];
     const reader = new FileReader();
