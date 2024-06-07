@@ -1,3 +1,15 @@
+document.addEventListener('DOMContentLoaded', function() {
+    // Ajouter un gestionnaire d'événements au bouton
+    document.getElementById('add-book-btn').addEventListener('click', function() {
+        // Ouvrir la boîte de dialogue de sélection de fichiers lorsqu'on clique sur le bouton "Ajouter un livre"
+        document.getElementById('file-input').click();
+    });
+});
+
+// Variables globales pour stocker les données du livre
+let bookData = null;
+let currentPageIndex = 0;
+
 document.getElementById('file-input').addEventListener('change', function(event) {
     const file = event.target.files[0];
     const reader = new FileReader();
@@ -20,11 +32,6 @@ document.getElementById('file-input').addEventListener('change', function(event)
     reader.readAsArrayBuffer(file);
 });
 
-document.getElementById('add-book-btn').addEventListener('click', function() {
-    // Ouvrir la boîte de dialogue de sélection de fichiers lorsqu'on clique sur le bouton "Ajouter un livre"
-    document.getElementById('file-input').click();
-});
-
 function isImage(mimeType) {
     return mimeType.startsWith('image/');
 }
@@ -39,6 +46,9 @@ function displayImage(content) {
 
     const bookCover = document.getElementById('book-cover');
     bookCover.innerHTML = `<img src="${imageUrl}" alt="Book Cover" />`;
+
+    // Réinitialiser l'index de la page
+    currentPageIndex = 0;
 }
 
 function displayArchive(content) {
