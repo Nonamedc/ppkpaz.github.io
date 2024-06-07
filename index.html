@@ -1,16 +1,20 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visionneur d'images</title>
+    <title>Ma Bibliothèque</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.cbz,.cbr,.zip,.rar" multiple>
-    <div id="viewer"></div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
-    <script src="script.js"></script>
-</body>
-</html>
+    <header>
+        <h1>Ma Bibliothèque</h1>
+    </header>
+    <main id="main-content">
+        <!-- Contenu principal ici -->
+        <div class="book" onclick="displayBookContent({ title: 'Titre du livre 1', author: 'Auteur 1', format: 'PDF' })">
+            <h2>Titre du livre 1</h2>
+            <p>Auteur: Auteur 1</p>
+            <p>Format: PDF</p>
+        </div>
+        <div class=
