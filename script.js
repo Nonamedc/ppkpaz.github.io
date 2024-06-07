@@ -39,9 +39,6 @@ function displayImage(content) {
 
     const bookCover = document.getElementById('book-cover');
     bookCover.innerHTML = `<img src="${imageUrl}" alt="Book Cover" />`;
-
-    // Réinitialiser l'index de la page
-    currentPageIndex = 0;
 }
 
 function displayArchive(content) {
