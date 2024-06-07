@@ -1,54 +1,51 @@
-// Fonction pour scanner un dossier et charger toutes les images
-async function scanAndLoadFolder() {
-  try {
-    const dirHandle = await window.showDirectoryPicker();
-    const imageFiles = [];
-    const imageFileNames = [];
-    for await (const entry of dirHandle.values()) {
-      if (entry.kind === 'file' && entry.name.match(/\.(jpg|jpeg|png)$/i)) {
-        imageFileNames.push(entry.name);
-        imageFiles.push(URL.createObjectURL(await entry.getFile()));
-      }
+// Fonction pour détecter les gestes de glissement
+function detectSwipe(el, callback) {
+  let touchstartX = 0;
+  let touchstartY = 0;
+  let touchendX = 0;
+  let touchendY = 0;
+
+  el.addEventListener('touchstart', function(event) {
+    touchstartX = event.touches[0].screenX;
+    touchstartY = event.touches[0].screenY;
+  }, false);
+
+  el.addEventListener('touchend', function(event) {
+    touchendX = event.changedTouches[0].screenX;
+    touchendY = event.changedTouches[0].screenY;
+    handleGesture();
+  }, false);
+
+  function handleGesture() {
+    if (touchendX < touchstartX) {
+      callback('swipeleft');
     }
-    // Trie les noms de fichiers pour conserver le même ordre que les images
-    const sortedImageFiles = imageFileNames.map(name => {
-      const index = imageFileNames.indexOf(name);
-      return imageFiles[index];
-    });
-    if (sortedImageFiles.length > 0) {
-      displayImages(sortedImageFiles);
-    } else {
-      alert('Aucune image trouvée dans le dossier.');
+    if (touchendX > touchstartX) {
+      callback('swiperight');
     }
-  } catch (error) {
-    console.error('Erreur lors du scan du dossier :', error);
+    if (touchendY < touchstartY) {
+      callback('swipeup');
+    }
+    if (touchendY > touchstartY) {
+      callback('swipedown');
+    }
   }
 }
 
-// Charger le fichier lorsque l'utilisateur le sélectionne
-document.getElementById('fileInput').addEventListener('change', async function(e) {
-  const file = e.target.files[0];
-  if (file) {
-    const imageFiles = [];
-    if (/\.(cbr|cbz|zip|rar)$/i.test(file.name)) {
-      const zip = new JSZip();
-      await zip.loadAsync(file);
-      await Promise.all(Object.values(zip.files).map(async zipEntry => {
-        if (!zipEntry.dir && /\.(jpg|jpeg|png)$/i.test(zipEntry.name)) {
-          const blob = await zipEntry.async('blob');
-          imageFiles.push(URL.createObjectURL(blob));
-        }
-      }));
-    } else if (/\.(jpg|jpeg)$/i.test(file.name)) {
-      imageFiles.push(URL.createObjectURL(file));
-    }
-    if (imageFiles.length > 0) {
-      displayImages(imageFiles);
-    } else {
-      alert('Format de fichier non pris en charge.');
-    }
-  }
-});
+// Fonction pour afficher une image en plein écran
+function displayFullScreen(imageUrl) {
+  const fullScreenDiv = document.createElement('div');
+  fullScreenDiv.classList.add('fullscreen');
+  const fullScreenImg = document.createElement('img');
+  fullScreenImg.src = imageUrl;
+  fullScreenDiv.appendChild(fullScreenImg);
+  document.body.appendChild(fullScreenDiv);
+
+  // Ajouter un événement pour fermer l'image en plein écran au clic
+  fullScreenDiv.addEventListener('click', () => {
+    document.body.removeChild(fullScreenDiv);
+  });
+}
 
 // Fonction pour afficher les images
 function displayImages(imageUrls) {
@@ -60,12 +57,27 @@ function displayImages(imageUrls) {
     pageDiv.classList.add('page');
     const pageImage1 = document.createElement('img');
     pageImage1.src = imageUrls[i * 2];
+    pageImage1.addEventListener('click', () => displayFullScreen(imageUrls[i * 2]));
     pageDiv.appendChild(pageImage1);
     if (i * 2 + 1 < imageUrls.length) {
       const pageImage2 = document.createElement('img');
       pageImage2.src = imageUrls[i * 2 + 1];
+      pageImage2.addEventListener('click', () => displayFullScreen(imageUrls[i * 2 + 1]));
       pageDiv.appendChild(pageImage2);
     }
     viewer.appendChild(pageDiv);
   }
-}
+
+  // Ajouter des événements de glissement pour la navigation entre les images
+  detectSwipe(viewer, function(direction) {
+    if (direction === 'swipeleft') {
+      // Navigation vers la gauche (image précédente)
+      console.log('Swipe left');
+    } else if (direction === 'swiperight') {
+      // Navigation vers la droite (image suivante)
+      console.log('Swipe right');
+    } else if (direction === 'swipeup') {
+      // Navigation vers le haut (diaporama vertical)
+      console.log('Swipe up');
+    } else if (direction === 'swipedown') {
+      // Navigation vers
