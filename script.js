@@ -4,13 +4,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // Ouvrir la boîte de dialogue de sélection de fichiers lorsqu'on clique sur le bouton "Ajouter un livre"
         document.getElementById('file-input').click();
     });
+
+    // Gestionnaire d'événements pour le chargement de fichiers
+    document.getElementById('file-input').addEventListener('change', handleFileSelect);
 });
 
 // Variables globales pour stocker les données du livre
 let bookData = null;
 let currentPageIndex = 0;
 
-document.getElementById('file-input').addEventListener('change', function(event) {
+function handleFileSelect(event) {
     const file = event.target.files[0];
     const reader = new FileReader();
 
@@ -30,7 +33,7 @@ document.getElementById('file-input').addEventListener('change', function(event)
     };
 
     reader.readAsArrayBuffer(file);
-});
+}
 
 function isImage(mimeType) {
     return mimeType.startsWith('image/');
