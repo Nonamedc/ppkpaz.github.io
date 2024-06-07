@@ -12,9 +12,30 @@
     </header>
     <main id="main-content">
         <!-- Contenu principal ici -->
-        <div class="book" onclick="displayBookContent({ title: 'Titre du livre 1', author: 'Auteur 1', format: 'PDF' })">
+        <div class="book" onclick="displayBookContent({ title: 'Titre du livre 1', author: 'Auteur 1', format: 'PDF', file: 'livre1.pdf' })">
             <h2>Titre du livre 1</h2>
             <p>Auteur: Auteur 1</p>
             <p>Format: PDF</p>
         </div>
-        <div class=
+        <div class="book" onclick="displayBookContent({ title: 'Titre du livre 2', author: 'Auteur 2', format: 'ZIP', file: 'livre2.zip' })">
+            <h2>Titre du livre 2</h2>
+            <p>Auteur: Auteur 2</p>
+            <p>Format: ZIP</p>
+        </div>
+        <!-- Ajoutez d'autres livres avec leurs formats respectifs ici -->
+    </main>
+    <footer>
+        <p>&copy; 2024 Ma Bibliothèque</p>
+    </footer>
+    <!-- Boîte modale pour la lecture de livres -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modal-title"></h2>
+            <div id="book-content"></div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
