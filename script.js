@@ -2,23 +2,29 @@
 function displayBookContent(book) {
     const modal = document.getElementById("modal");
     const modalTitle = document.getElementById("modal-title");
-    const bookContent = document.getElementById("book-content");
+    const modalContent = document.getElementById("modal-content");
 
     modal.style.display = "block";
     modalTitle.textContent = book.title;
 
-    // Vérifier le format du livre et extraire son contenu si nécessaire
-    if (book.format === "ZIP" || book.format === "CBZ" || book.format === "CBR" || book.format === "RAR") {
-        // Charger le fichier et extraire son contenu
-        fetch(book.file)
-            .then(response => response.blob())
-            .then(blob => {
-                extractZip(blob, function(content) {
-                    bookContent.innerHTML = content;
-                });
-            });
+    // Vérifier si le livre est une image
+    const imageExtensions = ["jpg", "jpeg", "png", "gif"];
+    const fileExtension = book.file.split('.').pop().toLowerCase();
+    if (imageExtensions.includes(fileExtension)) {
+        // Créer un élément image et lui attribuer la source du fichier
+        const image = document.createElement("img");
+        image.src = book.file;
+        image.setAttribute("data-action", "zoom");
+
+        // Ajouter l'image au contenu de la boîte modale
+        modalContent.innerHTML = "";
+        modalContent.appendChild(image);
+
+        // Activer Viewer.js pour l'image
+        const viewer = new Viewer(image);
     } else {
-        bookContent.innerHTML = `<p>Contenu du livre "${book.title}"... (Remplacer par le contenu réel du livre)</p>`;
+        // Si le livre n'est pas une image, afficher le contenu textuel (ou le contenu extrait du ZIP, etc.)
+        modalContent.innerHTML = `<p>Contenu du livre "${book.title}"... (Remplacer par le contenu réel du livre)</p>`;
     }
 }
 
@@ -28,13 +34,22 @@ function closeModal() {
     modal.style.display = "none";
 }
 
-// Fonction pour extraire le contenu du fichier ZIP
-function extractZip(file, callback) {
-    JSZip.loadAsync(file)
-        .then(function(zip) {
-            // Récupérer les noms de tous les fichiers dans le ZIP
-            const fileNames = Object.keys(zip.files);
-            // Extraire le contenu du premier fichier trouvé
-            zip.files[fileNames[0]].async("text").then(callback);
-        });
+// Fonction pour ajouter un livre à la bibliothèque
+function addBook(file) {
+    // Traitement du fichier et ajout du livre à la bibliothèque
+    const fileName = file.name;
+    const fileExtension = fileName.split('.').pop().toLowerCase();
+
+    // Vérifier si le fichier est un livre pris en charge
+    const supportedExtensions = ["pdf", "zip", "cbz", "cbr", "rar"];
+    if (supportedExtensions.includes(fileExtension)) {
+        // Ajoutez ici le code pour gérer le téléchargement et l'ajout du livre
+        console.log("Livre ajouté :", fileName);
+        // Vous pouvez ajouter le code pour stocker le fichier sur le serveur, etc.
+    } else {
+        console.log("Format de fichier non pris en charge :", fileName);
+    }
 }
+
+// Gestionnaire d'événement pour le soumission du formulaire de téléchargement
+document
