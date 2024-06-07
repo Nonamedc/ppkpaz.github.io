@@ -3,50 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ma Bibliothèque</title>
+    <title>Lecteur de Livres</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Viewer.js CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.9.3/viewer.min.css">
 </head>
 <body>
-    <header>
-        <h1>Ma Bibliothèque</h1>
-    </header>
-    <main id="main-content">
-        <!-- Contenu principal ici -->
-        <div class="book" onclick="displayBookContent({ title: 'Titre du livre 1', author: 'Auteur 1', format: 'PDF', file: 'livre1.pdf' })">
-            <h2>Titre du livre 1</h2>
-            <p>Auteur: Auteur 1</p>
-            <p>Format: PDF</p>
-        </div>
-        <div class="book" onclick="displayBookContent({ title: 'Titre du livre 2', author: 'Auteur 2', format: 'ZIP', file: 'livre2.zip' })">
-            <h2>Titre du livre 2</h2>
-            <p>Auteur: Auteur 2</p>
-            <p>Format: ZIP</p>
-        </div>
-        <!-- Ajoutez d'autres livres avec leurs formats respectifs ici -->
-    </main>
-    <footer>
-        <p>&copy; 2024 Ma Bibliothèque</p>
-    </footer>
-    <!-- Boîte modale pour la lecture de livres -->
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2 id="modal-title"></h2>
-            <!-- Contenu de la boîte modale -->
-            <div id="modal-content"></div>
-        </div>
-    </div>
+    <input type="file" id="file-input" accept=".cbz,.cbr,.zip,.rar,image/*,.epub">
+    <button id="add-book-btn">Ajouter un livre</button>
+    <div id="book-cover"></div>
+    <div id="book-viewer"></div>
 
-    <!-- Formulaire pour ajouter un livre -->
-    <form id="upload-form">
-        <input type="file" id="file-input" accept=".pdf, .zip, .cbz, .cbr, .rar">
-        <button type="submit">Ajouter un livre</button>
-    </form>
-
-    <!-- Viewer.js JavaScript -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.9.3/viewer.min.js"></script>
+    <script src="epub.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
