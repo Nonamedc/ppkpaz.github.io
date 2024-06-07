@@ -13,12 +13,13 @@ function displayFullScreen(imageUrls) {
         fullScreenDiv.appendChild(fullScreenImg);
     });
 
-    document.body.appendChild(fullScreenDiv);
+    const closeBtn = document.createElement('button');
+    closeBtn.classList.add('close-btn');
+    closeBtn.innerHTML = '&times;';
+    closeBtn.addEventListener('click', () => document.body.removeChild(fullScreenDiv));
+    fullScreenDiv.appendChild(closeBtn);
 
-    // Ajouter un événement pour fermer l'image en plein écran au clic
-    fullScreenDiv.addEventListener('click', () => {
-        document.body.removeChild(fullScreenDiv);
-    });
+    document.body.appendChild(fullScreenDiv);
 }
 
 // Fonction pour afficher la jaquette
