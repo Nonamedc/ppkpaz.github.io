@@ -3,12 +3,16 @@ const fileInput = document.getElementById('fileInput');
 const viewer = document.getElementById('viewer');
 
 // Fonction pour afficher une image en plein écran
-function displayFullScreen(imageUrl) {
+function displayFullScreen(imageUrls) {
     const fullScreenDiv = document.createElement('div');
     fullScreenDiv.classList.add('fullscreen');
-    const fullScreenImg = document.createElement('img');
-    fullScreenImg.src = imageUrl;
-    fullScreenDiv.appendChild(fullScreenImg);
+
+    imageUrls.forEach((url) => {
+        const fullScreenImg = document.createElement('img');
+        fullScreenImg.src = url;
+        fullScreenDiv.appendChild(fullScreenImg);
+    });
+
     document.body.appendChild(fullScreenDiv);
 
     // Ajouter un événement pour fermer l'image en plein écran au clic
@@ -17,18 +21,17 @@ function displayFullScreen(imageUrl) {
     });
 }
 
-// Fonction pour afficher les images
-function displayImages(imageUrls) {
-    viewer.innerHTML = '';
-    imageUrls.forEach(imageUrl => {
-        const img = document.createElement('img');
-        img.src = imageUrl;
-        img.addEventListener('click', () => displayFullScreen(imageUrl));
-        const pageDiv = document.createElement('div');
-        pageDiv.classList.add('page');
-        pageDiv.appendChild(img);
-        viewer.appendChild(pageDiv);
-    });
+// Fonction pour afficher la jaquette
+function displayCover(imageUrl, imageUrls) {
+    const coverDiv = document.createElement('div');
+    coverDiv.classList.add('cover');
+
+    const coverImg = document.createElement('img');
+    coverImg.src = imageUrl;
+    coverDiv.appendChild(coverImg);
+
+    coverDiv.addEventListener('click', () => displayFullScreen(imageUrls));
+    viewer.appendChild(coverDiv);
 }
 
 // Fonction pour charger les fichiers à partir des archives
@@ -57,7 +60,6 @@ async function loadFilesFromArchive(file) {
 // Écouter les changements dans l'input de fichier
 fileInput.addEventListener('change', async function(event) {
     const files = event.target.files;
-    const images = [];
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
         let imageUrls = [];
@@ -68,9 +70,8 @@ fileInput.addEventListener('change', async function(event) {
             // Charger une image individuelle
             imageUrls.push(URL.createObjectURL(file));
         }
-        images.push(...imageUrls);
-    }
-    if (images.length > 0) {
-        displayImages(images);
+        if (imageUrls.length > 0) {
+            displayCover(imageUrls[0], imageUrls);
+        }
     }
 });
