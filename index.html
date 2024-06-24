@@ -1,15 +1,279 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lecteur de Livres</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Modifier OPF pour EPUB 3</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #app {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            color: #555;
+        }
+        input[type="text"],
+        input[type="file"],
+        textarea {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .file-input-label {
+            cursor: pointer;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        .file-input-label:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <input type="file" id="file-input" accept=".cbz,.cbr,.zip,.rar,image/*,.epub">
-    <div id="book-viewer"></div>
+    <div id="app">
+        <h1>Modifier OPF pour EPUB 3</h1>
+        <label class="file-input-label">
+            Sélectionner un fichier EPUB
+            <input type="file" @change="loadEPUB" accept=".epub" style="display: none;">
+        </label>
+        <div v-if="epubLoaded">
+            <h2>Informations OPF</h2>
+            <label for="title">Titre:</label>
+            <input type="text" id="title" v-model="metadata.title">
+            <label for="author">Auteur:</label>
+            <input type="text" id="author" v-model="metadata.author">
+            <label for="publisher">Éditeur:</label>
+            <input type="text" id="publisher" v-model="metadata.publisher">
+            <label for="date">Date de publication:</label>
+            <input type="text" id="date" v-model="metadata.date">
+            <label for="language">Langue:</label>
+            <input type="text" id="language" v-model="metadata.language">
+            <label for="identifier">Identifiant (ISBN):</label>
+            <input type="text" id="identifier" v-model="metadata.identifier">
+            <label for="description">Description:</label>
+            <textarea id="description" v-model="metadata.description"></textarea>
+            <label for="rights">Droits:</label>
+            <input type="text" id="rights" v-model="metadata.rights">
+            <button @click="saveEPUB">Enregistrer EPUB</button>
+            <p class="error-message" v-if="saveError">{{ saveError }}</p>
+        </div>
+    </div>
 
-    <script src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.5.0/jszip.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            class EpubParser {
+                constructor(arrayBuffer) {
+                    this.arrayBuffer = arrayBuffer;
+                    this.zip = null;
+                    this.metadata = {};
+                }
+
+                async parse() {
+                    try {
+                        this.zip = await JSZip.loadAsync(this.arrayBuffer);
+                        const opfFile = await this.findOPFFile();
+                        const opfContent = await this.zip.file(opfFile).async('string');
+                        const parser = new DOMParser();
+                        const xmlDoc = parser.parseFromString(opfContent, "application/xml");
+                        this.metadata.title = xmlDoc.getElementsByTagName('dc:title')[0]?.textContent || '';
+                        this.metadata.author = xmlDoc.getElementsByTagName('dc:creator')[0]?.textContent || '';
+                        this.metadata.publisher = xmlDoc.getElementsByTagName('dc:publisher')[0]?.textContent || '';
+                        this.metadata.date = xmlDoc.getElementsByTagName('dc:date')[0]?.textContent || '';
+                        this.metadata.language = xmlDoc.getElementsByTagName('dc:language')[0]?.textContent || '';
+                        this.metadata.identifier = xmlDoc.getElementsByTagName('dc:identifier')[0]?.textContent || '';
+                        this.metadata.description = xmlDoc.getElementsByTagName('dc:description')[0]?.textContent || '';
+                        this.metadata.rights = xmlDoc.getElementsByTagName('dc:rights')[0]?.textContent || '';
+                    } catch (error) {
+                        console.error("Erreur lors du parsing du fichier OPF:", error);
+                        throw new Error("Erreur lors du parsing du fichier OPF. Veuillez vérifier le fichier EPUB.");
+                    }
+                }
+
+                async findOPFFile() {
+                    try {
+                        const containerXml = await this.zip.file("META-INF/container.xml").async("string");
+                        const parser = new DOMParser();
+                        const xmlDoc = parser.parseFromString(containerXml, "application/xml");
+                        const opfFile = xmlDoc.getElementsByTagName('rootfile')[0].getAttribute('full-path');
+                        return opfFile;
+                    } catch (error) {
+                        console.error("Erreur lors de la recherche du fichier OPF:", error);
+                        throw new Error("Fichier OPF non trouvé. Veuillez vérifier le contenu du fichier EPUB.");
+                    }
+                }
+
+                async generate() {
+                    try {
+                        const opfFile = await this.findOPFFile();
+                        let opfContent = await this.zip.file(opfFile).async('string');
+                        const parser = new DOMParser();
+                        const xmlDoc = parser.parseFromString(opfContent, "application/xml");
+
+                        // Mise à jour des métadonnées dans le document XML
+                        xmlDoc.getElementsByTagName('dc:title')[0].textContent = this.metadata.title;
+                        xmlDoc.getElementsByTagName('dc:creator')[0].textContent = this.metadata.author;
+                        xmlDoc.getElementsByTagName('dc:publisher')[0].textContent = this.metadata.publisher;
+                        xmlDoc.getElementsByTagName('dc:date')[0].textContent = this.metadata.date;
+                        xmlDoc.getElementsByTagName('dc:language')[0].textContent = this.metadata.language;
+                        xmlDoc.getElementsByTagName('dc:identifier')[0].textContent = this.metadata.identifier;
+                        xmlDoc.getElementsByTagName('dc:description')[0].textContent = this.metadata.description;
+                        xmlDoc.getElementsByTagName('dc:rights')[0].textContent = this.metadata.rights;
+
+                        const serializer = new XMLSerializer();
+                        opfContent = serializer.serializeToString(xmlDoc);
+                        this.zip.file(opfFile, opfContent);
+                        return await this.zip.generateAsync({ type: "arraybuffer" });
+                    } catch (error) {
+                        console.error("Erreur lors de la génération du fichier EPUB modifié:", error);
+                        throw new Error("Erreur lors de la génération du fichier EPUB modifié. Veuillez réessayer.");
+                    }
+                }
+            }
+
+            new Vue({
+                el: '#app',
+                data: {
+                    epubLoaded: false,
+                    metadata: {
+                        title: '',
+                        author: '',
+                        publisher: '',
+                        date: '',
+                        language: '',
+                        identifier: '',
+                        description: '',
+                        rights: ''
+                    },
+                    epub: null,
+                    saveError: '',
+                    downloadFilename: 'modified.epub'
+                },
+                methods: {
+                    async loadEPUB(event) {
+                        try {
+                            const file = event.target.files[0];
+                            if (!file) {
+                                alert('Veuillez sélectionner un fichier EPUB.');
+                                return;
+                            }
+                            const arrayBuffer = await file.arrayBuffer();
+                            this.epub = new EpubParser(arrayBuffer);
+                            await this.epub.parse();
+                            this.metadata.title = this.epub.metadata.title;
+                            this.metadata.author = this.epub.metadata.author;
+                            this.metadata.publisher = this.epub.metadata.publisher;
+                            this.metadata.date = this.epub.metadata.date;
+                            this.metadata.language = this.epub.metadata.language;
+                            this.metadata.identifier = this.epub.metadata.identifier;
+                            this.metadata.description = this.epub.metadata.description;
+                            this.metadata.rights = this.epub.metadata.rights;
+                            this.epubLoaded = true;
+                            this.downloadFilename = `modified_${file.name}`;
+                        } catch (error) {
+                            console.error("Erreur lors du chargement du fichier EPUB:", error);
+                            alert('Erreur lors du chargement du fichier EPUB. Veuillez réessayer.');
+                        }
+                    },
+                                        async saveEPUB() {
+                        try {
+                            if (!this.epub) {
+                                throw new Error("Aucun fichier EPUB chargé.");
+                            }
+
+                            this.epub.metadata.title = this.metadata.title;
+                            this.epub.metadata.author = this.metadata.author;
+                            this.epub.metadata.publisher = this.metadata.publisher;
+                            this.epub.metadata.date = this.metadata.date;
+                            this.epub.metadata.language = this.metadata.language;
+                            this.epub.metadata.identifier = this.metadata.identifier;
+                            this.epub.metadata.description = this.metadata.description;
+                            this.epub.metadata.rights = this.metadata.rights;
+
+                            const modifiedEPUB = await this.epub.generate();
+                            
+                            // Création du Blob à partir du fichier EPUB modifié
+                            const blob = new Blob([modifiedEPUB], { type: 'application/epub+zip' });
+
+                            // Utilisation de l'API File System Access pour sauvegarder localement
+                            const handle = await window.showSaveFilePicker({
+                                suggestedName: this.downloadFilename,
+                                types: [{
+                                    description: 'EPUB Files',
+                                    accept: {
+                                        'application/epub+zip': ['.epub']
+                                    }
+                                }]
+                            });
+
+                            const writable = await handle.createWritable();
+                            await writable.write(blob);
+                            await writable.close();
+
+                            alert('Fichier EPUB enregistré avec succès.');
+                        } catch (error) {
+                            console.error("Erreur lors de la sauvegarde du fichier EPUB:", error);
+                            this.saveError = error.message || "Erreur inconnue lors de la sauvegarde du fichier EPUB.";
+                            alert('Erreur lors de la sauvegarde du fichier EPUB. Veuillez réessayer.');
+                        }
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
